@@ -13,25 +13,30 @@ module.exports = {
             throw e
         }
     },
-    createEvent: async (args) => {
+    createEvent: async (args, req) => {
         try {
-            const event = {
-                title: args.eventInput.title,
-                description: args.eventInput.description,
-                price: +args.eventInput.price,
-                date: args.eventInput.date,
-                creator: "5eb4708beeb08c13397eeba0"
-            }
-            const saveEvent = new EventModel(event);
-            await saveEvent.save();
-            await userModel.updateOne({ _id: saveEvent.creator }, {
-                $push: {
-                    createdEvent: saveEvent._id
+            if (req.isAuth) {
+                const event = {
+                    title: args.eventInput.title,
+                    description: args.eventInput.description,
+                    price: +args.eventInput.price,
+                    date: args.eventInput.date,
+                    creator: req.userId
                 }
-            })
-            return event;
+                const saveEvent = new EventModel(event);
+                await saveEvent.save();
+                await userModel.updateOne({ _id: saveEvent.creator }, {
+                    $push: {
+                        createdEvent: saveEvent._id
+                    }
+                })
+                return event;
+            } else {
+                throw new Error('Authentication required !!')
+            }
         } catch (e) {
             throw e;
         }
     }
 }
+

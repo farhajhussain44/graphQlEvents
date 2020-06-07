@@ -4,8 +4,10 @@ const graphqlHttp = require("express-graphql");
 const { connect } = require("./db/config/dbconfig");
 const resolvers = require("./graphql/resolvers/index");
 const Schema = require("./graphql/schema/index");
+const isAuthenticate = require('./middleware/middleware');
 const app = express();
 app.use(bodyPraser.json());
+app.use(isAuthenticate);
 connect();
 app.use("/graphql", graphqlHttp({
     schema: Schema,
