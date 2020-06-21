@@ -30,7 +30,7 @@ module.exports = {
                         createdEvent: saveEvent._id
                     }
                 })
-                return event;
+                return await EventModel.findById(saveEvent._id).populate('creator');
             } else {
                 throw new Error('Authentication required !!')
             }

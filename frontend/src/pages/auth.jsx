@@ -1,8 +1,11 @@
 import React from 'react';
 import { ApiRequest } from '../functions';
-import './auth.css'
+import './auth.css';
+import AuthContext from '../context/authcontext';
 
 export default class AuthSection extends React.Component {
+    static contextType = AuthContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -51,29 +54,19 @@ export default class AuthSection extends React.Component {
         };
 
         let requestBody = this.state.isLogin ? requestBody1 : requestBody2;
-
         let responseData = await ApiRequest(requestBody);
-        console.log(responseData);
-
-        // fetch('http://localhost:8000/graphql', {
-        //     method: 'POST',
-        //     body: JSON.stringify(requestBody),
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     }
-        // })
-        //     .then(res => {
-        //         if (res.status !== 200 && res.status !== 201) {
-        //             throw new Error('Failed!');
-        //         }
-        //         return res.json();
-        //     })
-        //     .then(resData => {
-        //         console.log(resData);
-        //     })
-        //     .catch(err => {
-        //         console.log(err);
-        //     });
+        let { status } = responseData;
+        if (status === 200) {
+            let { data } = responseData.data;
+            if (data.login.token) {
+                let { token, userId, tokenExpiration } = data.login;
+                this.context.login(
+                    token, userId, tokenExpiration
+                )
+            }
+        } else {
+            console.log('failed')
+        }
     };
 
     render() {

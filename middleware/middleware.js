@@ -3,7 +3,7 @@ module.exports = (req, res, next) => {
     try {
         const AuthHedaer = req.get('Authorization');
         if (AuthHedaer) {
-            const token = AuthHedaer.spli(' ')[1];
+            const token = AuthHedaer.split(' ')[1];
             if (token) {
                 let isValid = jwt.verify(token, '%%secret%%');
                 if (isValid) {
@@ -14,7 +14,6 @@ module.exports = (req, res, next) => {
                     req.isAuth = false;
                     return next();
                 }
-
             } else {
                 req.isAuth = false;
                 return next();
