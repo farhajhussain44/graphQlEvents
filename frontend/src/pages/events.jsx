@@ -1,9 +1,10 @@
 import React from 'react';
 import Modal from '../components/modal/modal';
 import Backdrop from '../components/backdrop/backdrop';
+import EventList from '../components/Events/EventList/EventList'
 import './events.css';
 import AuthContext from '../context/authcontext';
-import { ApiRequest, ApiRequestWithAuth } from '../functions'
+import { ApiRequest, ApiRequestWithAuth } from '../functions';
 
 export default class EventsSection extends React.Component {
     state = {
@@ -62,9 +63,15 @@ export default class EventsSection extends React.Component {
             this.fetchEvents();
         }
     };
+    showDetailHandler = eventId => {
+        this.setState(prevState => {
+            const selectedEvent = prevState.events.find(e => e._id === eventId);
+            return { selectedEvent: selectedEvent };
+        });
+    };
 
     modalCancelHandler = () => {
-        this.setState({ creating: false });
+        this.setState({ creating: false, selectedEvent: null });
     };
 
     fetchEvents = async () => {
@@ -92,19 +99,14 @@ export default class EventsSection extends React.Component {
             this.setState({ events: events });
         }
     }
+    bookEventHandler = () => { };
 
     render() {
-        const eventList = this.state.events.map(event => {
-            return (
-                <li key={event._id} className="events__list-item">
-                    {event.title}
-                </li>
-            );
-        });
+
 
         return (
             <React.Fragment>
-                {this.state.creating && <Backdrop />}
+                {(this.state.creating || this.state.selectedEvent) && <Backdrop />}
                 {this.state.creating && (
                     <Modal
                         title="Add Event"
@@ -112,6 +114,7 @@ export default class EventsSection extends React.Component {
                         canConfirm
                         onCancel={this.modalCancelHandler}
                         onConfirm={this.modalConfirmHandler}
+                        confirmText="Confirm"
                     >
                         <form>
                             <div className="form-control">
@@ -137,6 +140,23 @@ export default class EventsSection extends React.Component {
                         </form>
                     </Modal>
                 )}
+                {this.state.selectedEvent && (
+                    <Modal
+                        title={this.state.selectedEvent.title}
+                        canCancel
+                        canConfirm
+                        onCancel={this.modalCancelHandler}
+                        onConfirm={this.bookEventHandler}
+                        confirmText="Book"
+                    >
+                        <h1>{this.state.selectedEvent.title}</h1>
+                        <h2>
+                            ${this.state.selectedEvent.price} -{' '}
+                            {new Date(this.state.selectedEvent.date).toLocaleDateString()}
+                        </h2>
+                        <p>{this.state.selectedEvent.description}</p>
+                    </Modal>
+                )}
                 {this.context.token && (
                     <div className="events-control">
                         <p>Share your own Events!</p>
@@ -145,7 +165,15 @@ export default class EventsSection extends React.Component {
                 </button>
                     </div>
                 )}
-                <ul className="events__list">{eventList}</ul>
+                {this.state.isLoading ? (
+                    null
+                ) : (
+                        <EventList
+                            events={this.state.events}
+                            authUserId={this.context.userId}
+                            onViewDetail={this.showDetailHandler}
+                        />
+                    )}
             </React.Fragment>
         );
     }
